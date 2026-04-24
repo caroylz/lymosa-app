@@ -30,14 +30,14 @@ app.use(express.static(__dirname));         // sirve index.html
 // ══════════════════════════════════════════════════════════════
 const CONFIG = {
   // Tu correo de Gmail (donde se envían los reportes)
-  email_destino: 'carolina.dibene@lymosa.com',
+  email_destino: process.env.EMAIL_DESTINO,
 
   // Correo desde el que se envía (puede ser el mismo)
-  email_origen: 'lymosa.imou@gmail.com',
+  email_origen: process.env.EMAIL_ORIGEN,
 
   // Contraseña de aplicación de Gmail
   // (No es tu contraseña normal — ve a: Google → Seguridad → Contraseñas de app)
-  email_password: 'jiceuctavmdqgrdw',
+  email_password: process.env.EMAIL_PASSWORD,
 
   // Puerto donde corre el servidor
   puerto: 3000,
