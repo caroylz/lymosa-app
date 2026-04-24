@@ -1,6 +1,9 @@
 {
   "dependencies": {
+    "@sparticuz/chromium": "^147.0.2",
     "express": "^5.2.1",
-    "nodemailer": "^8.0.5"
+    "nodemailer": "^8.0.5",
+    "pdfkit": "^0.18.0",
+    "puppeteer-core": "^24.42.0"
   }
 }
