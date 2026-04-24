@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1D9E75">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Lymosa">
+<title>Lymosa Energy — Reportes</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --verde:       #1D9E75;
+    --verde-dark:  #0F6E56;
+    --verde-light: #E1F5EE;
+    --verde-mid:   #9FE1CB;
+    --gris:        #888780;
+    --gris-light:  #F1EFE8;
+    --gris-borde:  #D3D1C7;
+    --texto:       #2C2C2A;
+    --texto-sub:   #5F5E5A;
+    --blanco:      #ffffff;
+    --danger:      #E24B4A;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--gris-light);
+    color: var(--texto);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── CONTENEDOR PRINCIPAL ── */
+  .app {
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--blanco);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: var(--verde);
+    padding: 14px 20px 16px;
+    flex-shrink: 0;
+  }
+  .topbar-inner { display: flex; align-items: center; gap: 12px; }
+  .logo-wrap { display: flex; align-items: center; gap: 8px; }
+  .logo-icon { width: 32px; height: 32px; }
+  .logo-text h1 { color: var(--blanco); font-size: 16px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo-text p  { color: var(--verde-mid); font-size: 11px; margin-top: 1px; }
+  .topbar-sub {
+    margin-top: 10px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .topbar-sub span { color: var(--verde-mid); font-size: 12px; }
+  .topbar-sub strong { color: var(--blanco); font-size: 12px; font-weight: 600; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap { padding: 14px 20px 0; }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .progress-label span { font-size: 12px; color: var(--texto-sub); }
+  .progress-label strong { font-size: 12px; color: var(--verde-dark); font-weight: 600; }
+  .progress-track {
+    height: 4px;
+    background: var(--gris-borde);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--verde);
+    border-radius: 99px;
+    transition: width 0.4s cubic-bezier(.4,0,.2,1);
+  }
+  .steps-dots {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  .step-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--gris-borde);
+    transition: all 0.3s;
+  }
+  .step-dot.done { background: var(--verde-mid); }
+  .step-dot.active { background: var(--verde); width: 20px; border-radius: 4px; }
+
+  /* ── PANTALLAS ── */
+  .screen { display: none; flex-direction: column; flex: 1; overflow-y: auto; }
+  .screen.active { display: flex; }
+  .screen-body { padding: 20px; flex: 1; }
+  .screen-title { font-size: 18px; font-weight: 600; color: var(--texto); margin-bottom: 4px; }
+  .screen-subtitle { font-size: 13px; color: var(--texto-sub); margin-bottom: 20px; }
+
+  /* ── CAMPOS DE FORMULARIO ── */
+  .field-group { margin-bottom: 16px; }
+  .field-label { font-size: 12px; font-weight: 600; color: var(--texto-sub); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; display: block; }
+  .field-readonly {
+    background: var(--gris-light);
+    border: 1px solid var(--gris-borde);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 15px;
+    color: var(--texto-sub);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .badge-fija {
+    font-size: 10px;
+    font-weight: 600;
+    background: var(--verde-light);
+    color: var(--verde-dark);
+    border-radius: 4px;
+    padding: 2px 7px;
+    letter-spacing: 0.04em;
+  }
+  .field-input {
+    width: 100%;
+    background: var(--blanco);
+    border: 1.5px solid var(--gris-borde);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 16px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--texto);
+    transition: border-color 0.2s;
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .field-input:focus { border-color: var(--verde); }
+  .field-input.error { border-color: var(--danger); }
+  .field-hint { font-size: 11px; color: var(--gris); margin-top: 4px; }
+  .field-hint.error-msg { color: var(--danger); display: none; }
+  .field-hint.error-msg.show { display: block; }
+
+  /* ── CHIPS DE PRODUCTO ── */
+  .chips { display: flex; gap: 8px; }
+  .chip {
+    flex: 1;
+    padding: 11px 8px;
+    border-radius: 10px;
+    border: 1.5px solid var(--gris-borde);
+    background: var(--blanco);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--texto-sub);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .chip.selected {
+    border-color: var(--verde);
+    background: var(--verde-light);
+    color: var(--verde-dark);
+  }
+
+  /* ── SECCIÓN DE FOTOS ── */
+  .foto-section { margin-bottom: 20px; }
+  .foto-section-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--texto-sub);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .foto-counter {
+    background: var(--verde-light);
+    color: var(--verde-dark);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 99px;
+  }
+  .foto-actions { display: flex; gap: 8px; margin-bottom: 10px; }
+  .foto-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1.5px solid var(--gris-borde);
+    background: var(--blanco);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--texto-sub);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .foto-btn:hover { border-color: var(--verde); color: var(--verde-dark); background: var(--verde-light); }
+  .foto-btn svg { flex-shrink: 0; }
+  .fotos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .foto-slot {
+    aspect-ratio: 4/3;
+    border-radius: 10px;
+    border: 2px dashed var(--gris-borde);
+    background: var(--gris-light);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .foto-slot.filled { border: none; }
+  .foto-slot img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+  .foto-slot .slot-label { font-size: 11px; color: var(--gris); font-weight: 500; }
+  .foto-slot .slot-num { font-size: 22px; font-weight: 700; color: var(--gris-borde); }
+  .foto-remove {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .foto-check {
+    position: absolute;
+    bottom: 6px; right: 6px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--verde);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── DIVISOR ── */
+  .divider { height: 1px; background: var(--gris-borde); margin: 16px 0; }
+
+  /* ── RESUMEN ── */
+  .resumen-card {
+    background: var(--gris-light);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .resumen-title { font-size: 11px; font-weight: 700; color: var(--texto-sub); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+  .resumen-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 13px;
+    border-bottom: 1px solid var(--gris-borde);
+  }
+  .resumen-row:last-child { border-bottom: none; }
+  .resumen-row span:first-child { color: var(--texto-sub); }
+  .resumen-row span:last-child { font-weight: 600; color: var(--texto); }
+  .resumen-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--verde-light);
+    color: var(--verde-dark);
+  }
+
+  /* ── BOTONES ── */
+  .btn-primary {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    background: var(--verde);
+    border: none;
+    border-radius: 12px;
+    color: var(--blanco);
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
+  .btn-primary:disabled { background: var(--gris-borde); color: var(--gris); cursor: not-allowed; }
+  .btn-secondary {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    background: var(--blanco);
+    border: 1.5px solid var(--verde);
+    border-radius: 12px;
+    color: var(--verde-dark);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-secondary:active { background: var(--verde-light); }
+
+  /* ── PANTALLA DE ÉXITO ── */
+  .success-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 40px 20px 20px;
+  }
+  .success-icon {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: var(--verde-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    animation: pop 0.4s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes pop {
+    0%   { transform: scale(0.5); opacity: 0; }
+    70%  { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .success-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .success-sub   { font-size: 14px; color: var(--texto-sub); line-height: 1.6; margin-bottom: 28px; }
+
+  /* ── LOADING OVERLAY ── */
+  .loading {
+    display: none;
+    position: absolute; inset: 0;
+    background: rgba(255,255,255,0.92);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    z-index: 100;
+  }
+  .loading.show { display: flex; }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--gris-borde);
+    border-top-color: var(--verde);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading p { font-size: 14px; color: var(--texto-sub); font-weight: 500; }
+
+  /* ── TRANSITIONS ── */
+  .screen { animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ── INPUT FILE OCULTO ── */
+  input[type="file"] { display: none; }
+
+  /* ── SAFE AREA ── */
+  .screen-body { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="logo-wrap">
+        <svg class="logo-icon" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="rgba(255,255,255,0.15)"/>
+          <path d="M16 5 C10 10 8 16 11 21 C13 24 16 25 16 25 C16 25 19 24 21 21 C24 16 22 10 16 5Z" fill="white" opacity="0.9"/>
+          <circle cx="15.5" cy="16" r="3" fill="#1D9E75"/>
+        </svg>
+        <div class="logo-text">
+          <h1>Lymosa Energy</h1>
+          <p>Evidencia de descargas</p>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-sub">
+      <span>Estación de servicio</span>
+      <strong>14978</strong>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-label">
+      <span id="stepLabel">Paso 1 de 4</span>
+      <strong id="stepName">Embarque 1 — datos</strong>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:25%"></div>
+    </div>
+    <div class="steps-dots">
+      <div class="step-dot active" id="dot0"></div>
+      <div class="step-dot" id="dot1"></div>
+      <div class="step-dot" id="dot2"></div>
+      <div class="step-dot" id="dot3"></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       PANTALLA 1 — Embarque 1: datos
+  ════════════════════════════════════════ -->
+  <div class="screen active" id="screen0">
+    <div class="screen-body">
+      <p class="screen-title">Embarque 1 de 2</p>
+      <p class="screen-subtitle">Ingresa los datos del primer embarque</p>
+
+      <div class="field-group">
+        <label class="field-label">Estación de servicio</label>
+        <div class="field-readonly">
+          <span>14978</span>
+          <span class="badge-fija">Fija</span>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Número de embarque</label>
+        <input class="field-input" id="embarque1" type="number" inputmode="numeric"
+               pattern="[0-9]*" maxlength="6" placeholder="Ej. 123456"
+               oninput="this.value=this.value.slice(0,6); validarEmbarque('embarque1','err1')">
+        <p class="field-hint">Exactamente 6 dígitos</p>
+        <p class="field-hint error-msg" id="err1">Debe tener exactamente 6 dígitos</p>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Tipo de producto</label>
+        <div class="chips">
+          <button class="chip selected" onclick="selProducto(0, 'Magna', this)">Magna</button>
+          <button class="chip" onclick="selProducto(0, 'Premium', this)">Premium</button>
+          <button class="chip" onclick="selProducto(0, 'Diesel', this)">Diesel</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <button class="btn-primary" onclick="irPantalla1()">Fotos del embarque 1 →</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       PANTALLA 2 — Embarque 1: fotos
+  ════════════════════════════════════════ -->
+  <div class="screen" id="screen1">
+    <div class="screen-body">
+      <p class="screen-title">Fotos — embarque 1</p>
+      <p class="screen-subtitle" id="sub1">Embarque xxxxxx · Magna</p>
+
+      <div class="foto-section">
+        <div class="foto-section-label">
+          Evidencia fotográfica
+          <span class="foto-counter" id="counter1">0 / 2</span>
+        </div>
+        <div class="foto-actions">
+          <button class="foto-btn" onclick="abrirCamara(1)">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="4" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.4" fill="none"/><circle cx="9" cy="10" r="3" stroke="currentColor" stroke-width="1.4" fill="none"/><path d="M6 4l1-2h4l1 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+            Cámara
+          </button>
+          <button class="foto-btn" onclick="abrirGaleria(1)">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="2" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.4" fill="none"/><path d="M1 12l4-4 3.5 3.5L12 8l5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="6" cy="6" r="1.5" fill="currentColor"/></svg>
+            Galería
+          </button>
+        </div>
+        <div class="fotos-grid">
+          <div class="foto-slot" id="slot1-0">
+            <span class="slot-num">1</span>
+            <span class="slot-label">Foto 1</span>
+          </div>
+          <div class="foto-slot" id="slot1-1">
+            <span class="slot-num">2</span>
+            <span class="slot-label">Foto 2</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <button class="btn-primary" id="btnS1" onclick="irPantalla2()" disabled>Embarque 2 →</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       PANTALLA 3 — Embarque 2: datos
+  ════════════════════════════════════════ -->
+  <div class="screen" id="screen2">
+    <div class="screen-body">
+      <p class="screen-title">Embarque 2 de 2</p>
+      <p class="screen-subtitle">Ingresa los datos del segundo embarque</p>
+
+      <div class="field-group">
+        <label class="field-label">Estación de servicio</label>
+        <div class="field-readonly">
+          <span>14978</span>
+          <span class="badge-fija">Fija</span>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Número de embarque</label>
+        <input class="field-input" id="embarque2" type="number" inputmode="numeric"
+               pattern="[0-9]*" maxlength="6" placeholder="Ej. 654321"
+               oninput="this.value=this.value.slice(0,6); validarEmbarque('embarque2','err2')">
+        <p class="field-hint">Exactamente 6 dígitos</p>
+        <p class="field-hint error-msg" id="err2">Debe tener exactamente 6 dígitos</p>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Tipo de producto</label>
+        <div class="chips">
+          <button class="chip selected" onclick="selProducto(1, 'Magna', this)">Magna</button>
+          <button class="chip" onclick="selProducto(1, 'Premium', this)">Premium</button>
+          <button class="chip" onclick="selProducto(1, 'Diesel', this)">Diesel</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <button class="btn-primary" onclick="irPantalla3()">Fotos del embarque 2 →</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       PANTALLA 4 — Embarque 2: fotos + envío
+  ════════════════════════════════════════ -->
+  <div class="screen" id="screen3">
+    <div class="screen-body">
+      <p class="screen-title">Fotos — embarque 2</p>
+      <p class="screen-subtitle" id="sub2">Embarque xxxxxx · Magna</p>
+
+      <div class="foto-section">
+        <div class="foto-section-label">
+          Evidencia fotográfica
+          <span class="foto-counter" id="counter2">0 / 2</span>
+        </div>
+        <div class="foto-actions">
+          <button class="foto-btn" onclick="abrirCamara(2)">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="4" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.4" fill="none"/><circle cx="9" cy="10" r="3" stroke="currentColor" stroke-width="1.4" fill="none"/><path d="M6 4l1-2h4l1 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+            Cámara
+          </button>
+          <button class="foto-btn" onclick="abrirGaleria(2)">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="2" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.4" fill="none"/><path d="M1 12l4-4 3.5 3.5L12 8l5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="6" cy="6" r="1.5" fill="currentColor"/></svg>
+            Galería
+          </button>
+        </div>
+        <div class="fotos-grid">
+          <div class="foto-slot" id="slot2-0">
+            <span class="slot-num">1</span>
+            <span class="slot-label">Foto 1</span>
+          </div>
+          <div class="foto-slot" id="slot2-1">
+            <span class="slot-num">2</span>
+            <span class="slot-label">Foto 2</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Resumen antes de enviar -->
+      <div class="resumen-card" id="resumenFinal" style="display:none">
+        <p class="resumen-title">Resumen del reporte</p>
+        <div class="resumen-row">
+          <span>Estación</span>
+          <span class="resumen-badge">14978</span>
+        </div>
+        <div class="resumen-row">
+          <span>Embarque 1</span>
+          <span id="res_emb1">—</span>
+        </div>
+        <div class="resumen-row">
+          <span>Producto 1</span>
+          <span id="res_prod1">—</span>
+        </div>
+        <div class="resumen-row">
+          <span>Embarque 2</span>
+          <span id="res_emb2">—</span>
+        </div>
+        <div class="resumen-row">
+          <span>Producto 2</span>
+          <span id="res_prod2">—</span>
+        </div>
+        <div class="resumen-row">
+          <span>Fotos</span>
+          <span class="resumen-badge">4 fotos</span>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btnEnviar" onclick="enviarReporte()" disabled>
+        Generar y enviar PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       PANTALLA 5 — Éxito
+  ════════════════════════════════════════ -->
+  <div class="screen" id="screen4">
+    <div class="success-wrap">
+      <div class="success-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <path d="M6 18L14 26L30 10" stroke="#1D9E75" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="success-title">Reporte enviado</p>
+      <p class="success-sub">El PDF de 2 páginas fue generado y enviado a tu supervisor automáticamente.</p>
+
+      <div class="resumen-card" style="width:100%;text-align:left;">
+        <p class="resumen-title">Confirmación</p>
+        <div class="resumen-row"><span>Embarque 1</span><span id="conf_emb1">—</span></div>
+        <div class="resumen-row"><span>Embarque 2</span><span id="conf_emb2">—</span></div>
+        <div class="resumen-row"><span>Fotos enviadas</span><span class="resumen-badge">4</span></div>
+        <div class="resumen-row"><span>Hora</span><span id="conf_hora">—</span></div>
+      </div>
+
+      <button class="btn-primary" onclick="nuevoReporte()" style="width:100%;">Nuevo reporte</button>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p id="loadingMsg">Generando PDF...</p>
+  </div>
+
+  <!-- Inputs ocultos para cámara y galería -->
+  <input type="file" id="inputCamara" accept="image/*" capture="environment">
+  <input type="file" id="inputGaleria" accept="image/*">
+</div>
+
+<script>
+  // ── ESTADO GLOBAL ─────────────────────────────────────────────────────────
+  const estado = {
+    embarque1: { numero: '', producto: 'Magna', fotos: [null, null] },
+    embarque2: { numero: '', producto: 'Magna', fotos: [null, null] },
+    fotoTarget: { emb: 1, slot: -1 }  // qué slot estamos llenando
+  };
+
+  const STEPS = [
+    { label: 'Paso 1 de 4', name: 'Embarque 1 — datos',  pct: '25%'  },
+    { label: 'Paso 2 de 4', name: 'Embarque 1 — fotos',  pct: '50%'  },
+    { label: 'Paso 3 de 4', name: 'Embarque 2 — datos',  pct: '75%'  },
+    { label: 'Paso 4 de 4', name: 'Embarque 2 — fotos',  pct: '100%' },
+  ];
+
+  let pantallaActual = 0;
+
+  // ── NAVEGACIÓN ─────────────────────────────────────────────────────────────
+  function mostrarPantalla(n) {
+    document.querySelectorAll('.screen').forEach((s,i) => s.classList.toggle('active', i===n));
+    pantallaActual = n;
+    const pw = document.getElementById('progressWrap');
+    pw.style.display = n === 4 ? 'none' : 'block';
+    if (n < 4) {
+      const s = STEPS[n] || STEPS[3];
+      document.getElementById('stepLabel').textContent  = s.label;
+      document.getElementById('stepName').textContent   = s.name;
+      document.getElementById('progressFill').style.width = s.pct;
+      [0,1,2,3].forEach(i => {
+        const d = document.getElementById('dot'+i);
+        d.className = 'step-dot' + (i < n ? ' done' : i === n ? ' active' : '');
+      });
+    }
+    window.scrollTo(0,0);
+  }
+
+  function irPantalla1() {
+    const num = document.getElementById('embarque1').value;
+    if (String(num).length !== 6) { mostrarError('embarque1','err1'); return; }
+    estado.embarque1.numero = num;
+    document.getElementById('sub1').textContent =
+      `Embarque ${num} · ${estado.embarque1.producto}`;
+    mostrarPantalla(1);
+  }
+
+  function irPantalla2() { mostrarPantalla(2); }
+
+  function irPantalla3() {
+    const num = document.getElementById('embarque2').value;
+    if (String(num).length !== 6) { mostrarError('embarque2','err2'); return; }
+    estado.embarque2.numero = num;
+    document.getElementById('sub2').textContent =
+      `Embarque ${num} · ${estado.embarque2.producto}`;
+    mostrarPantalla(3);
+  }
+
+  // ── VALIDACIONES ───────────────────────────────────────────────────────────
+  function validarEmbarque(inputId, errId) {
+    const v = document.getElementById(inputId).value;
+    const err = document.getElementById(errId);
+    const inp = document.getElementById(inputId);
+    if (v.length === 6) {
+      inp.classList.remove('error');
+      err.classList.remove('show');
+    }
+  }
+  function mostrarError(inputId, errId) {
+    document.getElementById(inputId).classList.add('error');
+    document.getElementById(errId).classList.add('show');
+    document.getElementById(inputId).focus();
+  }
+
+  // ── SELECCIÓN DE PRODUCTO ──────────────────────────────────────────────────
+  function selProducto(emb, prod, btn) {
+    btn.closest('.chips').querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+    btn.classList.add('selected');
+    if (emb === 0) estado.embarque1.producto = prod;
+    else           estado.embarque2.producto = prod;
+  }
+
+  // ── FOTOS ──────────────────────────────────────────────────────────────────
+  function abrirCamara(emb) {
+    const slot = siguienteSlot(emb);
+    if (slot === -1) return;
+    estado.fotoTarget = { emb, slot };
+    document.getElementById('inputCamara').value = '';
+    document.getElementById('inputCamara').click();
+  }
+
+  function abrirGaleria(emb) {
+    const slot = siguienteSlot(emb);
+    if (slot === -1) return;
+    estado.fotoTarget = { emb, slot };
+    document.getElementById('inputGaleria').value = '';
+    document.getElementById('inputGaleria').click();
+  }
+
+  function siguienteSlot(emb) {
+    const fotos = emb === 1 ? estado.embarque1.fotos : estado.embarque2.fotos;
+    const i = fotos.indexOf(null);
+    return i; // -1 si ya están llenas
+  }
+
+  function procesarFoto(file) {
+    if (!file) return;
+    const { emb, slot } = estado.fotoTarget;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const dataUrl = e.target.result;
+      if (emb === 1) estado.embarque1.fotos[slot] = dataUrl;
+      else           estado.embarque2.fotos[slot] = dataUrl;
+      renderSlot(emb, slot, dataUrl);
+      actualizarCounter(emb);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function renderSlot(emb, slot, dataUrl) {
+    const id = `slot${emb}-${slot}`;
+    const el = document.getElementById(id);
+    el.innerHTML = `
+      <img src="${dataUrl}" alt="Foto ${slot+1}">
+      <button class="foto-remove" onclick="quitarFoto(${emb},${slot})">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M2 2l6 6M8 2l-6 6" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="foto-check">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+          <path d="M2 5.5l2.5 2.5L9 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    `;
+    el.classList.add('filled');
+  }
+
+  function quitarFoto(emb, slot) {
+    if (emb === 1) estado.embarque1.fotos[slot] = null;
+    else           estado.embarque2.fotos[slot] = null;
+    const id = `slot${emb}-${slot}`;
+    const el = document.getElementById(id);
+    el.innerHTML = `<span class="slot-num">${slot+1}</span><span class="slot-label">Foto ${slot+1}</span>`;
+    el.classList.remove('filled');
+    actualizarCounter(emb);
+  }
+
+  function actualizarCounter(emb) {
+    const fotos = emb === 1 ? estado.embarque1.fotos : estado.embarque2.fotos;
+    const llenas = fotos.filter(f => f !== null).length;
+    document.getElementById(`counter${emb}`).textContent = `${llenas} / 2`;
+
+    if (emb === 1) {
+      document.getElementById('btnS1').disabled = llenas < 2;
+    } else {
+      const listas = llenas === 2;
+      document.getElementById('btnEnviar').disabled = !listas;
+      const resumen = document.getElementById('resumenFinal');
+      resumen.style.display = listas ? 'block' : 'none';
+      if (listas) rellenarResumen();
+    }
+  }
+
+  function rellenarResumen() {
+    document.getElementById('res_emb1').textContent  = estado.embarque1.numero;
+    document.getElementById('res_prod1').textContent = estado.embarque1.producto;
+    document.getElementById('res_emb2').textContent  = estado.embarque2.numero;
+    document.getElementById('res_prod2').textContent = estado.embarque2.producto;
+  }
+
+  // ── ENVÍO AL BACKEND ───────────────────────────────────────────────────────
+  async function enviarReporte() {
+    mostrarLoading('Generando PDF...');
+
+    const ahora = new Date();
+    const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                   'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+    const payload = {
+      estacion: '14978',
+      embarque1: {
+        numero:   estado.embarque1.numero,
+        producto: estado.embarque1.producto,
+        foto1:    estado.embarque1.fotos[0],
+        foto2:    estado.embarque1.fotos[1],
+      },
+      embarque2: {
+        numero:   estado.embarque2.numero,
+        producto: estado.embarque2.producto,
+        foto1:    estado.embarque2.fotos[0],
+        foto2:    estado.embarque2.fotos[1],
+      },
+      fecha: {
+        dia:  String(ahora.getDate()).padStart(2,'0'),
+        mes:  meses[ahora.getMonth()],
+        anio: String(ahora.getFullYear()),
+      }
+    };
+
+    try {
+      // ⚠️  Cambia esta URL por la dirección de tu servidor cuando lo tengas
+      const resp = await fetch('/api/reporte', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload)
+      });
+
+      if (!resp.ok) throw new Error('Error del servidor');
+
+      ocultarLoading();
+      mostrarPantalla(4);
+
+      const hora = ahora.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' });
+      document.getElementById('conf_emb1').textContent = estado.embarque1.numero;
+      document.getElementById('conf_emb2').textContent = estado.embarque2.numero;
+      document.getElementById('conf_hora').textContent = hora;
+
+    } catch (err) {
+      ocultarLoading();
+      alert('Hubo un error al enviar. Verifica tu conexión e intenta de nuevo.');
+    }
+  }
+
+  function nuevoReporte() {
+    estado.embarque1 = { numero:'', producto:'Magna', fotos:[null,null] };
+    estado.embarque2 = { numero:'', producto:'Magna', fotos:[null,null] };
+    document.getElementById('embarque1').value = '';
+    document.getElementById('embarque2').value = '';
+    [1,2].forEach(emb => {
+      [0,1].forEach(slot => {
+        const el = document.getElementById(`slot${emb}-${slot}`);
+        el.innerHTML = `<span class="slot-num">${slot+1}</span><span class="slot-label">Foto ${slot+1}</span>`;
+        el.classList.remove('filled');
+      });
+      document.getElementById(`counter${emb}`).textContent = '0 / 2';
+    });
+    document.getElementById('btnS1').disabled   = true;
+    document.getElementById('btnEnviar').disabled = true;
+    document.getElementById('resumenFinal').style.display = 'none';
+    // resetear chips
+    document.querySelectorAll('.chips').forEach(group => {
+      group.querySelectorAll('.chip').forEach((c,i) => c.classList.toggle('selected', i===0));
+    });
+    mostrarPantalla(0);
+  }
+
+  function mostrarLoading(msg) {
+    document.getElementById('loadingMsg').textContent = msg;
+    document.getElementById('loading').classList.add('show');
+  }
+  function ocultarLoading() {
+    document.getElementById('loading').classList.remove('show');
+  }
+
+  // ── LISTENERS DE ARCHIVOS ──────────────────────────────────────────────────
+  document.getElementById('inputCamara').addEventListener('change', e => {
+    procesarFoto(e.target.files[0]);
+  });
+  document.getElementById('inputGaleria').addEventListener('change', e => {
+    procesarFoto(e.target.files[0]);
+  });
+</script>
+</body>
+</html>
