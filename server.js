@@ -35,7 +35,12 @@ app.post('/api/reporte',async(req,res)=>{
       embarque1:{numero_embarque:embarque1.numero,producto:embarque1.producto,estacion,fecha_dia:fecha.dia,fecha_mes:fecha.mes,fecha_anio:fecha.anio,foto1:rutas['embarque1_foto1']||null,foto2:rutas['embarque1_foto2']||null},
       embarque2:{numero_embarque:embarque2.numero,producto:embarque2.producto,estacion,fecha_dia:fecha.dia,fecha_mes:fecha.mes,fecha_anio:fecha.anio,foto1:rutas['embarque2_foto1']||null,foto2:rutas['embarque2_foto2']||null}
     },pdfPath);
-    const transporter=nodemailer.createTransport({service:'gmail',auth:{user:CONFIG.email_origen,pass:CONFIG.email_password}});
+    const transporter=nodemailer.createTransport({
+      host:'smtp.gmail.com',
+      port:587,
+      secure:false,
+      auth:{user:CONFIG.email_origen,pass:CONFIG.email_password}
+    });
     await transporter.sendMail({
       from:`"Lymosa Energy" <${CONFIG.email_origen}>`,
       to:CONFIG.email_destino,
