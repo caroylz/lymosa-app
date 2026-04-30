@@ -862,7 +862,8 @@
       const resp = await fetch('/api/reporte', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload)
+        body:    JSON.stringify(payload),
+  signal:  AbortSignal.timeout(120000)
       });
 
       if (!resp.ok) throw new Error('Error del servidor');
