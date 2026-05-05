@@ -1,5 +1,5 @@
 const express=require('express');
-const nodemailer=require('nodemailer');
+const {Resend}=require('resend');
 const fs=require('fs');
 const path=require('path');
 const os=require('os');
@@ -9,8 +9,7 @@ app.use(express.json({limit:'50mb'}));
 app.use(express.static(__dirname));
 const CONFIG={
   email_destino:process.env.EMAIL_DESTINO,
-  email_origen:process.env.EMAIL_ORIGEN,
-  email_password:process.env.EMAIL_PASSWORD,
+  resend_api_key:process.env.RESEND_API_KEY,
   puerto:process.env.PORT||3000,
 };
 app.post('/api/reporte',async(req,res)=>{
@@ -35,18 +34,14 @@ app.post('/api/reporte',async(req,res)=>{
       embarque1:{numero_embarque:embarque1.numero,producto:embarque1.producto,estacion,fecha_dia:fecha.dia,fecha_mes:fecha.mes,fecha_anio:fecha.anio,foto1:rutas['embarque1_foto1']||null,foto2:rutas['embarque1_foto2']||null},
       embarque2:{numero_embarque:embarque2.numero,producto:embarque2.producto,estacion,fecha_dia:fecha.dia,fecha_mes:fecha.mes,fecha_anio:fecha.anio,foto1:rutas['embarque2_foto1']||null,foto2:rutas['embarque2_foto2']||null}
     },pdfPath);
-    const transporter=nodemailer.createTransport({
-      host:'smtp.gmail.com',
-      port:587,
-      secure:false,
-      auth:{user:CONFIG.email_origen,pass:CONFIG.email_password}
-    });
-    await transporter.sendMail({
-      from:`"Lymosa Energy" <${CONFIG.email_origen}>`,
+    const resend=new Resend(CONFIG.resend_api_key);
+    const pdfBuffer=fs.readFileSync(pdfPath);
+    await resend.emails.send({
+      from:'Lymosa Energy <onboarding@resend.dev>',
       to:CONFIG.email_destino,
       subject:`Reporte Lymosa — Est.14978 — Emb.${embarque1.numero}/${embarque2.numero} — ${fecha.dia} ${fecha.mes} ${fecha.anio}`,
       html:`<p>Reporte adjunto — Embarques ${embarque1.numero} y ${embarque2.numero} — Estación 14978</p>`,
-      attachments:[{filename:`reporte_${embarque1.numero}_${embarque2.numero}.pdf`,path:pdfPath,contentType:'application/pdf'}]
+      attachments:[{filename:`reporte_${embarque1.numero}_${embarque2.numero}.pdf`,content:pdfBuffer}]
     });
     fs.rmSync(tmpDir,{recursive:true,force:true});
     res.json({ok:true});
